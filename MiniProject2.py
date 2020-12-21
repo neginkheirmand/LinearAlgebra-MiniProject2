@@ -3,6 +3,38 @@ import sys
 import os
 import numpy as np
 
+
+
+defaultShadowColor=[127, 127, 127]
+image = cv.imread("colorScheme.jpg")
+
+def mouseRGB(event,x,y,flags,param):
+    if event == cv.EVENT_LBUTTONDOWN: #checks mouse left button down condition
+        colorsB = image[y,x,0]
+        colorsG = image[y,x,1]
+        colorsR = image[y,x,2]
+        colors = image[y,x]
+        print("Red: ",colorsR)
+        print("Green: ",colorsG)
+        print("Blue: ",colorsB)
+        global defaultShadowColor 
+        defaultShadowColor = colors
+
+
+def chooseShadowColor():  
+    # Read an image, a window and bind the function to window
+
+    cv.namedWindow('mouseRGB')
+    cv.setMouseCallback('mouseRGB',mouseRGB)
+    #Do until esc pressed
+    while(1):
+        cv.imshow('mouseRGB',image)
+        if cv.waitKey(20) & 0xFF == 27:
+            break
+    #if esc pressed, finish.
+    cv.destroyAllWindows()
+    print("choosen color was"+str(defaultShadowColor))
+
 def isWhite(color):
     #this method takes in a list representing the color list : [b, g, r]
     #returns true if a pixel with such color can be considered white
@@ -38,7 +70,7 @@ def shear(matrix, Costumelambda, height, width, depth ):
                 place = np.array([j, i])
                 place=place.dot(shearMatrix)
                 #the default shadpw color is light grey= [127, 127, 127] 
-                whiteImage[int(place[1]), int(place[0])]=[127, 127, 127]
+                whiteImage[int(place[1]), int(place[0])]=defaultShadowColor
     cv.imshow("h"+str(Costumelambda), whiteImage)
     return whiteImage
     
@@ -69,6 +101,20 @@ def createOutput(original, shadow, Costumelambda, height, width, depth):
     return finalImage
 
 def main():
+    
+    while True:
+        try:
+            option = input("would you like to choose the color of the shadow or use the default color?\n1)use default\n2)choose my own costume shadow color\n")
+            option = int(option)
+            if option!=1 and option!=2:
+                print("\033[91mOops!  That was no valid number.  Try again...\033[0m")
+                continue
+            break
+        except ValueError:
+            print("\033[91mOops!  That was no valid number.  Try again...\033[0m")
+    if option==2:
+        print("\033[91mchoose the color by clicking on it and  press the ESC key when Ur done\033[0m")
+        chooseShadowColor()
     nameImage = input("Enter the name of the image: ") 
     image = LoadImage(nameImage)
     height, width, depth = image.shape
@@ -78,18 +124,19 @@ def main():
             costumeLambda = float(costumeLambda)
             break
         except ValueError:
-            print("Oops!  That was no valid number.  Try again...")
+            print("\033[91mOops!  That was no valid number.  Try again...\033[0m")
     #create the shadow containing image
     shearImage = shear(image, costumeLambda, height, width, depth)
 
     #create the final version of the image with shadow
     finalVersion = createOutput(image, shearImage, costumeLambda, height, width, depth)
-    print("press s so save the final output")
+    print("press \033[91ms \033[0mso save the final output")
     k = cv.waitKey(0)
     if k == ord("s"):
         cv.imwrite("finalVersionOf_"+nameImage, finalVersion)
         print("output saved as finalVersionOf_"+nameImage)
     cv.destroyAllWindows()
+
 
 if __name__ == "__main__":
     main()
