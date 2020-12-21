@@ -7,7 +7,6 @@ def isWhite(color):
     #this method takes in a list representing the color list : [b, g, r]
     #returns true if a pixel with such color can be considered white
     #the function of this method is to reduce the noise
-
     sumRGB=0
     for i in range(0, len(color)):
         sumRGB+=color[i]
@@ -34,15 +33,16 @@ def shear(matrix, Costumelambda, height, width, depth ):
     shearMatrix = np.array([[1, 0], [Costumelambda, 1]])
     for i in range(0, height):
         for j in range(0, width):
-            whitePixel = True
-            for k in range(0, depth):
-                if matrix[i, j, k]!=255:
-                    whitePixel = False
-                    break
-            if not whitePixel:
+            # whitePixel = True
+            # for k in range(0, depth):
+            #     if matrix[i, j, k]!=255:
+            #         whitePixel = False
+            #         break
+            if not isWhite(matrix[i, j]):
                 #the variable passed to the shear transformation is the [x, y] in this case [j, i]
                 place = np.array([j, i])
                 place=place.dot(shearMatrix)
+                #the default shadpw color is light grey= [127, 127, 127] 
                 whiteImage[int(place[1]), int(place[0])]=[127, 127, 127]
     cv.imshow("h"+str(Costumelambda), whiteImage)
     return whiteImage
@@ -56,12 +56,7 @@ def createOutput(original, shadow, Costumelambda, height, width, depth):
     
     for i in range(0, height):
         for j in range(0, width):
-            colorPixel = False
-            for k in range(0, depth):
-                if original[i, j, k]!=255:
-                    colorPixel=True
-                    break
-            if colorPixel:
+            if not isWhite(original[i, j]):
                 #color it the same as the original picture
                 finalImage[i, j]=original[i, j]
             elif shadow[i, j, 0]!=255:
