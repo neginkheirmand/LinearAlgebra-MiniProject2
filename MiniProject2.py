@@ -10,12 +10,12 @@ def isWhite(color):
     sumRGB=0
     for i in range(0, len(color)):
         sumRGB+=color[i]
-    if (sumRGB/len(color))>250:
+    if (sumRGB/len(color))>245:
         return True
     return False 
 
 def LoadImage(stringName):
-    #this function will load an image with the specified name in the current directory
+    #this function will load an image with the specified name in the current directory and return the loaded matrix of pixels
     img = cv.imread(os.getcwd()+"/"+stringName,1)
     #check if the image exists and can be loaded
     if img is None:
@@ -33,11 +33,6 @@ def shear(matrix, Costumelambda, height, width, depth ):
     shearMatrix = np.array([[1, 0], [Costumelambda, 1]])
     for i in range(0, height):
         for j in range(0, width):
-            # whitePixel = True
-            # for k in range(0, depth):
-            #     if matrix[i, j, k]!=255:
-            #         whitePixel = False
-            #         break
             if not isWhite(matrix[i, j]):
                 #the variable passed to the shear transformation is the [x, y] in this case [j, i]
                 place = np.array([j, i])
@@ -48,6 +43,7 @@ def shear(matrix, Costumelambda, height, width, depth ):
     return whiteImage
     
 def createOutput(original, shadow, Costumelambda, height, width, depth):
+    #this function will create the output image based on the colorful pixels of the original picture(in first place) and the shadow pixels of the shear image
     newShape = [height,  width + int(height*Costumelambda), depth]
     finalImage = np.zeros(newShape,dtype=np.uint8)
     finalImage.fill(255)
@@ -62,24 +58,37 @@ def createOutput(original, shadow, Costumelambda, height, width, depth):
             elif shadow[i, j, 0]!=255:
                 #if its the shadow color, then the output image should have the shadow in that pixel too
                 finalImage[i][j]=shadow[i, j]
+    #now we iterate over the parts of shadow pic that are not part of the original one
+    for i in range(0, height):
+        for j in range(width, width + int(height*Costumelambda)):
+            if shadow[i, j, 0]!=255:
+                #if its the shadow color, then the output image should have the shadow in that pixel too
+                finalImage[i][j]=shadow[i, j]
+    #and we show the final version of the image, with shadow
     cv.imshow("final image" , finalImage)
-             
-
-
-    
+    return finalImage
 
 def main():
     nameImage = input("Enter the name of the image: ") 
     image = LoadImage(nameImage)
     height, width, depth = image.shape
-    shearImage = shear(image, 0.3, height, width, depth)
-    createOutput(image, shearImage, 0.3, height, width, depth)
-    # shear(image, 3, height, width, depth)
-    # print(img.shape)
-    # cv.imshow("Display window", img)
+    while True:
+        try:
+            costumeLambda = input("please enter your costume lambda(for horizontal shear transformation)")
+            costumeLambda = float(costumeLambda)
+            break
+        except ValueError:
+            print("Oops!  That was no valid number.  Try again...")
+    #create the shadow containing image
+    shearImage = shear(image, costumeLambda, height, width, depth)
+
+    #create the final version of the image with shadow
+    finalVersion = createOutput(image, shearImage, costumeLambda, height, width, depth)
+    print("press s so save the final output")
     k = cv.waitKey(0)
-    # if k == ord("s"):
-        # cv.imwrite("starry_night.png", img)
+    if k == ord("s"):
+        cv.imwrite("finalVersionOf_"+nameImage, finalVersion)
+        print("output saved as finalVersionOf_"+nameImage)
     cv.destroyAllWindows()
 
 if __name__ == "__main__":
