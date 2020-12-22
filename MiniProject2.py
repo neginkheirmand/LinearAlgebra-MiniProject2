@@ -3,8 +3,6 @@ import sys
 import os
 import numpy as np
 
-
-
 defaultShadowColor=[127, 127, 127]
 image = cv.imread("colorScheme.jpg")
 
@@ -71,7 +69,6 @@ def shear(matrix, Costumelambda, height, width, depth ):
                 place=place.dot(shearMatrix)
                 #the default shadpw color is light grey= [127, 127, 127] 
                 whiteImage[int(place[1]), int(place[0])]=defaultShadowColor
-    cv.imshow("h"+str(Costumelambda), whiteImage)
     return whiteImage
     
 def createOutput(original, shadow, Costumelambda, height, width, depth):
@@ -97,7 +94,7 @@ def createOutput(original, shadow, Costumelambda, height, width, depth):
                 #if its the shadow color, then the output image should have the shadow in that pixel too
                 finalImage[i][j]=shadow[i, j]
     #and we show the final version of the image, with shadow
-    cv.imshow("final image" , finalImage)
+    cv.imshow("after" , finalImage)
     return finalImage
 
 def main():
